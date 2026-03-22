@@ -1,150 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tool Launcher</title>
-<style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-        background: linear-gradient(135deg, #0f172a, #1e1b4b);
-        font-family: 'Segoe UI', Courier New, monospace;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        color: #e2e8f0;
-    }
-    .container {
-        background: rgba(10,10,18,0.92);
-        border-radius: 24px;
-        border: 2px solid #a855f7;
-        padding: 32px;
-        width: 100%;
-        max-width: 480px;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-    }
-    h1 { color: #a855f7; margin-bottom: 16px; font-size: 28px; }
-    .btn {
-        background: linear-gradient(135deg, #a855f7, #ec489a);
-        border: none;
-        border-radius: 40px;
-        padding: 14px 28px;
-        color: white;
-        font-weight: bold;
-        font-size: 17px;
-        cursor: pointer;
-        width: 100%;
-        margin: 12px 0;
-        transition: all 0.2s;
-    }
-    .btn:hover { transform: scale(0.97); box-shadow: 0 8px 20px rgba(168,85,247,0.4); }
-    .btn-secondary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
-    #log {
-        background: #050508;
-        border: 1px solid #a855f7;
-        border-radius: 12px;
-        padding: 16px;
-        max-height: 180px;
-        overflow-y: auto;
-        font-size: 13px;
-        margin-top: 20px;
-        text-align: left;
-    }
-    .log-line { margin: 4px 0; color: #4ade80; }
-    .error { color: #f87171; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 RealFeed Tool Launcher</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            font-family: 'Segoe UI', Courier New, monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+        .pass-screen {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.9);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .box {
+            background: rgba(10,10,18,0.95);
+            border: 2px solid #a855f7;
+            border-radius: 24px;
+            padding: 40px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(168,85,247,0.4);
+        }
+        h2 { color: #a855f7; margin-bottom: 20px; }
+        input {
+            width: 100%; padding: 14px; font-size: 24px; text-align: center;
+            letter-spacing: 8px; background: #0f0f1a; border: 1px solid #a855f7;
+            border-radius: 40px; color: white; margin: 16px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #a855f7, #ec489a);
+            border: none; border-radius: 40px; padding: 14px;
+            color: white; font-weight: bold; font-size: 17px;
+            cursor: pointer; width: 100%; transition: all 0.2s;
+        }
+        button:hover { transform: scale(0.98); }
+        .err { color: #ef4444; margin-top: 12px; display: none; }
+        .main { display: none; max-width: 600px; background: rgba(10,10,18,0.9);
+            border: 2px solid #a855f7; border-radius: 24px; padding: 32px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        #code-box {
+            width: 100%; height: 320px; background: #111827; color: #86efac;
+            font-family: monospace; font-size: 13px; padding: 16px;
+            border: 1px solid #a855f7; border-radius: 12px; margin: 20px 0;
+            resize: vertical; white-space: pre;
+        }
+        .log { background: #050508; border: 1px solid #a855f7; border-radius: 12px;
+            padding: 16px; max-height: 160px; overflow-y: auto; font-size: 13px; margin-top: 20px; }
+        .log div { margin: 4px 0; color: #4ade80; }
+        .log .err { color: #f87171; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🔧 Tool Launcher</h1>
-    <button class="btn" id="launch">🚀 LAUNCH TOOL</button>
-    <button class="btn btn-secondary" id="open">🌐 OPEN realfeed.lol</button>
-    
-    <div id="log">
-        <div class="log-line">[00:00] Launcher ready</div>
-        <div class="log-line">[00:00] Click LAUNCH TOOL after you're logged in</div>
+<div class="pass-screen" id="pass">
+    <div class="box">
+        <h2>ENTER CODE</h2>
+        <input type="password" id="code" maxlength="8" placeholder="••••••••" autofocus>
+        <button id="unlock">UNLOCK</button>
+        <div class="err" id="err">Wrong code</div>
+    </div>
+</div>
+
+<div class="main" id="main">
+    <h1 style="color:#a855f7; text-align:center; margin-bottom:20px;">RealFeed Tool</h1>
+    <p style="text-align:center; color:#94a3b8; margin-bottom:24px;">
+        1. Click OPEN below<br>
+        2. Log in on realfeed.lol<br>
+        3. Press F12 → Console tab<br>
+        4. Paste code from box below → Enter
+    </p>
+
+    <button id="open" style="margin-bottom:16px;">🌐 Open realfeed.lol</button>
+
+    <textarea id="code-box" readonly>
+// Paste this entire block into Console on realfeed.lol after login
+
+(async function() {
+    if (typeof sb === 'undefined' || !window.currentProfile) {
+        alert("Refresh realfeed.lol + log in first, then try again.");
+        return;
+    }
+
+    const toast = document.createElement('div');
+    toast.textContent = 'Tool Loading...';
+    toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:12px 28px;border-radius:999px;z-index:9999999;font-weight:bold;';
+    document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(), 2500);
+
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;bottom:20px;right:20px;width:420px;max-height:82vh;background:#0f172a;border:2px solid #a855f7;border-radius:16px;z-index:999999;box-shadow:0 20px 50px #000c;overflow:hidden;color:#e2e8f0;';
+    panel.innerHTML = `
+        <div style="background:linear-gradient(135deg,#a855f7,#ec489a);padding:14px;text-align:center;font-weight:bold;color:white;">
+            RealFeed Tool • Active
+            <button onclick="this.parentNode.parentNode.parentNode.remove()" style="float:right;background:none;border:none;color:white;font-size:20px;cursor:pointer;">×</button>
+        </div>
+        <div style="padding:16px;">
+            <p>@\${window.currentProfile.username || 'user'}</p>
+            <button style="background:#10b981;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;">Like All Visible</button>
+            <button style="background:#3b82f6;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;">Follow Visible Users</button>
+            <button style="background:#ef4444;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;">Clear DMs (Careful)</button>
+            <div style="margin-top:20px;font-size:11px;color:#64748b;text-align:center;">
+                Paste updated code to add more features
+            </div>
+        </div>
+    `;
+    document.body.appendChild(panel);
+    console.log("[Tool] Panel loaded");
+})();
+    </textarea>
+
+    <button id="copy">📋 Copy Code to Clipboard</button>
+
+    <div class="log" id="log">
+        <div>Launcher ready</div>
     </div>
 </div>
 
 <script>
-function log(msg, type = 'info') {
-    const area = document.getElementById('log');
-    const line = document.createElement('div');
-    line.className = 'log-line';
-    if (type === 'error') line.className += ' error';
-    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    area.appendChild(line);
-    area.scrollTop = area.scrollHeight;
-}
+// CHANGE THIS TO YOUR DESIRED CODE (4-8 chars/digits)
+const SECRET = "2519";  // ← put your code here (it will be hashed)
 
-async function launch() {
-    log('Preparing launch...');
+const salts = ['x9kP2mQz', '7vL4nR8t'];
 
-    let target = null;
-    try {
-        target = window.open('', 'realfeed');
-    } catch(e) {}
+async function checkCode() {
+    const input = document.getElementById('code').value.trim();
+    if (!input) return;
 
-    if (!target || target.closed) {
-        log('Opening realfeed.lol in new tab...');
-        target = window.open('https://realfeed.lol', 'realfeed');
-        await new Promise(r => setTimeout(r, 3500));
-    }
+    const enc = new TextEncoder();
+    let hash = await crypto.subtle.digest('SHA-256', enc.encode(input + salts[0]));
+    hash = await crypto.subtle.digest('SHA-256', new Uint8Array([...new Uint8Array(hash), ...enc.encode(salts[1])]));
+    const final = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
 
-    if (!target || target.closed) {
-        log('Could not open or find realfeed tab', 'error');
-        return;
-    }
+    // Example hash for "2519" with those salts (change SECRET above to update)
+    const correct = 'your_generated_hash_here';  // generate it once below
 
-    log('Target window ready. Injecting script...');
-
-    const code = `
-    (function() {
-        if (typeof sb === 'undefined' || !window.currentProfile) {
-            alert('Please refresh realfeed.lol and log in first.');
-            return;
-        }
-
-        const box = document.createElement('div');
-        box.style.cssText = 'position:fixed;bottom:20px;right:20px;width:340px;background:#0f172a;border:2px solid #a855f7;border-radius:16px;padding:16px;color:#e2e8f0;z-index:999999;box-shadow:0 10px 30px #00000080;';
-        box.innerHTML = '<div style="color:#a855f7;font-weight:bold;font-size:18px;">Tool Active</div><p>Control panel would go here</p>';
-        document.body.appendChild(box);
-
-        console.log('[TOOL] Injected successfully');
-    })();
-    `;
-
-    try {
-        const script = target.document.createElement('script');
-        script.textContent = code;
-        target.document.body.appendChild(script);
-        log('Injection completed ✓ Look bottom-right on realfeed page', 'success');
-    } catch (err) {
-        log('Could not inject directly (cross-origin block)', 'error');
-        log('Open F12 console on realfeed.lol and paste the code from below', 'error');
-        
-        const ta = document.createElement('textarea');
-        ta.value = code;
-        ta.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;z-index:9999999;background:#111;color:#0f0;font-family:monospace;padding:12px;border:2px solid #a855f7;';
-        document.body.appendChild(ta);
-        ta.select();
-        
-        setTimeout(() => {
-            if (confirm('Copy done? Close box?')) ta.remove();
-        }, 8000);
+    if (final === correct) {
+        document.getElementById('pass').style.display = 'none';
+        document.getElementById('main').style.display = 'block';
+        logMsg('Unlocked');
+    } else {
+        document.getElementById('err').style.display = 'block';
+        setTimeout(() => document.getElementById('err').style.display = 'none', 2000);
     }
 }
 
-document.getElementById('launch').onclick = launch;
+// Generate your hash one time (uncomment & run in console once):
+// async function gen() { const e=new TextEncoder(); let h=await crypto.subtle.digest('SHA-256',e.encode("YOURCODE"+'x9kP2mQz')); h=await crypto.subtle.digest('SHA-256',new Uint8Array([...new Uint8Array(h),...e.encode('7vL4nR8t')])); console.log(Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')); } gen();
+
+document.getElementById('unlock').onclick = checkCode;
+document.getElementById('code').onkeypress = e => { if (e.key === 'Enter') checkCode(); };
 
 document.getElementById('open').onclick = () => {
-    window.open('https://realfeed.lol', 'realfeed');
-    log('realfeed.lol opened in new tab');
+    window.open('https://realfeed.lol', '_blank');
+    logMsg('Opened realfeed.lol — log in then paste code');
 };
+
+document.getElementById('copy').onclick = () => {
+    const ta = document.getElementById('code-box');
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+        logMsg('Code copied — paste in console on realfeed');
+    }).catch(() => logMsg('Copy failed — select & ctrl+C manually', 'err'));
+};
+
+function logMsg(msg, type='info') {
+    const l = document.getElementById('log');
+    const d = document.createElement('div');
+    d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    if (type==='err') d.style.color = '#f87171';
+    l.appendChild(d);
+    l.scrollTop = l.scrollHeight;
+}
 </script>
 </body>
 </html>
