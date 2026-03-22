@@ -1,108 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RealFeed Tool Starter</title>
-    <style>
-        body {
-            background: linear-gradient(135deg, #0f172a, #1e1b4b);
-            color: #e2e8f0;
-            font-family: monospace;
-            margin: 0;
-            padding: 30px;
-            text-align: center;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 { color: #a855f7; margin-bottom: 20px; }
-        .box {
-            background: rgba(10,10,18,0.9);
-            border: 2px solid #a855f7;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 700px;
-            width: 100%;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-        }
-        button {
-            background: linear-gradient(135deg, #a855f7, #ec489a);
-            border: none;
-            border-radius: 40px;
-            padding: 16px 40px;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 20px 0;
-            transition: all 0.2s;
-        }
-        button:hover { transform: scale(1.03); box-shadow: 0 10px 30px rgba(168,85,247,0.4); }
-        textarea {
-            width: 100%;
-            height: 340px;
-            background: #111827;
-            color: #86efac;
-            border: 1px solid #a855f7;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 13px;
-            font-family: monospace;
-            margin: 20px 0;
-            resize: vertical;
-        }
-        #status {
-            margin-top: 20px;
-            padding: 12px;
-            background: rgba(16,185,129,0.15);
-            border: 1px solid #10b981;
-            border-radius: 8px;
-            color: #4ade80;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
+(async function() {
+    console.clear();
+    console.log("[RF Tool] Starting injection...");
 
-<div class="box">
-    <h1>RealFeed Tool Injector</h1>
-    
-    <p style="margin-bottom: 24px; color: #94a3b8;">
-        Click the button below — it will open realfeed.lol.<br>
-        Log in there → press F12 → Console tab → paste the code below → Enter
-    </p>
+    // Try to find Supabase client (common names)
+    let supabase = window.sb || window.supabase || 
+        (window.__NUXT__?.state?.supabase) ||  // if Nuxt
+        (function() { try { return document.querySelector('script').__supabase__ } catch(e){} })();
 
-    <button onclick="start()">🚀 Open realfeed.lol & Prepare Inject</button>
+    if (!supabase) {
+        console.error("[RF Tool] Supabase client not found in globals. Site might use private import.");
+        alert("Platform client not detected. Refresh page fully, then try again.");
+        return;
+    }
 
-    <textarea readonly id="injectcode">
-// Copy this whole block and paste it into Console (F12) on realfeed.lol AFTER you log in
+    console.log("[RF Tool] Supabase found!");
 
-(async function(){if(typeof sb==='undefined'||!window.currentProfile){alert('Refresh + log in first');return}const t=document.createElement('div');t.textContent='Tool Loading...';t.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:12px 28px;border-radius:999px;z-index:9999999;font-weight:bold;box-shadow:0 4px 16px #00000050;';document.body.appendChild(t);setTimeout(()=>t.remove(),2400);const p=document.createElement('div');p.style.cssText='position:fixed;bottom:20px;right:20px;width:440px;max-height:80vh;background:#0f172a;border:2px solid #a855f7;border-radius:16px;z-index:999999;box-shadow:0 20px 50px #000c;overflow-y:auto;color:#e2e8f0;';p.innerHTML=`<div style="background:linear-gradient(135deg,#a855f7,#ec489a);padding:14px;text-align:center;font-weight:bold;color:white;font-size:17px;">RealFeed Tool Active</div><div style="padding:16px;"><p style="color:#94a3b8;">@${window.currentProfile?.username||'logged in'}</p><button style="background:#10b981;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" onclick="alert('Mass like started - customize me')">Like All Visible</button><button style="background:#3b82f6;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" onclick="alert('Follow started')">Follow Visible</button><button style="background:#ef4444;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" onclick="if(confirm('Clear DMs?')) alert('Cleared - add real code')">Clear DMs</button><div style="margin-top:20px;font-size:11px;color:#64748b;text-align:center;">Add your features here later</div></div>`;document.body.appendChild(p);console.log('[Tool] Injected');})();
-    </textarea>
+    // Try to get current user/profile
+    let profile = null;
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        profile = user;
+        console.log("[RF Tool] Auth user:", user?.id);
+    } catch (e) {
+        console.warn("[RF Tool] auth.getUser failed:", e);
+    }
 
-    <button onclick="copyCode()">📋 Copy Inject Code</button>
+    // Fallback to DOM for username if needed
+    const usernameElem = document.querySelector('a[href^="/@"]') || 
+                         document.querySelector('[data-testid="profile-username"]') ||
+                         document.querySelector('span.font-bold');
+    const username = usernameElem ? usernameElem.textContent.trim().replace('@','') : 'unknown';
 
-    <div id="status">Waiting...</div>
-</div>
+    // Show loading toast
+    const toast = document.createElement('div');
+    toast.textContent = `Tool Loading for @${username}...`;
+    toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:12px 28px;border-radius:999px;z-index:9999999;font-weight:bold;box-shadow:0 4px 16px #00000050;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 
-<script>
-function start() {
-    window.open('https://realfeed.lol', '_blank');
-    document.getElementById('status').innerHTML = 'realfeed.lol opened → log in → F12 → Console → paste & Enter';
-}
+    // Build panel
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;bottom:20px;right:20px;width:440px;max-height:85vh;background:#0f172a;border:2px solid #a855f7;border-radius:16px;z-index:999999;box-shadow:0 20px 60px #000c;overflow-y:auto;color:#e2e8f0;font-family:monospace;';
+    panel.innerHTML = `
+        <div style="background:linear-gradient(135deg,#a855f7,#ec489a);padding:14px;text-align:center;font-weight:bold;color:white;font-size:17px;">
+            RealFeed Tool • Connected as @${username}
+            <button onclick="this.closest('div').parentElement.remove()" style="float:right;background:none;border:none;color:white;font-size:22px;cursor:pointer;">×</button>
+        </div>
+        <div style="padding:16px;">
+            <p style="color:#94a3b8;margin-bottom:16px;">Basic controls ready. Customize actions below.</p>
+            
+            <button style="background:#10b981;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" 
+              onclick="alert('Mass like would run here - add sb.from(\"likes\").insert(...) logic later')">
+                ❤️ Like Visible Posts
+            </button>
+            
+            <button style="background:#3b82f6;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" 
+              onclick="alert('Follow action placeholder - use sb.from(\"follows\")')">
+                👥 Follow Visible Users
+            </button>
+            
+            <button style="background:#ef4444;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" 
+              onclick="if(confirm('Really clear DMs? This is destructive!')) alert('DM clear placeholder - sb.from(\"messages\").delete()...')">
+                🗑️ Clear My DMs (Danger!)
+            </button>
+            
+            <div style="margin-top:24px;font-size:11px;color:#64748b;text-align:center;">
+                Panel injected successfully. Reply with diagnostic output for full features.
+            </div>
+        </div>
+    `;
+    document.body.appendChild(panel);
 
-function copyCode() {
-    const ta = document.getElementById('injectcode');
-    ta.select();
-    navigator.clipboard.writeText(ta.value).then(() => {
-        document.getElementById('status').innerHTML = 'Code copied! Paste it in console on realfeed.lol now.';
-    }).catch(() => {
-        alert('Copy failed — select text manually and Ctrl+C / Cmd+C');
-    });
-}
-</script>
-
-</body>
-</html>
+    console.log("[RF Tool] Panel injected — check bottom-right corner");
+})();
