@@ -336,25 +336,21 @@
     </div>
     
     <script>
-        // ========== PASSCODE SYSTEM ==========
-        const PASSCODE = "0821";
-        
-        function checkPasscode() {
-            const input = document.getElementById('passcode-input').value;
-            if (input === PASSCODE) {
-                document.getElementById('passcode-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
-                addLog('✅ Passcode accepted! Welcome to RealFeed Tester.', 'success');
-            } else {
-                const errorDiv = document.getElementById('passcode-error');
-                errorDiv.style.display = 'block';
-                setTimeout(() => {
-                    errorDiv.style.display = 'none';
-                }, 2000);
-                document.getElementById('passcode-input').value = '';
-                document.getElementById('passcode-input').focus();
-            }
-        }
+const PASSCODE_HASH = "7c222fb2927d828af22f592134e8932480637c0d"; // example
+
+async function checkPasscode() {
+    const input = document.getElementById('passcode-input').value;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    if (hash === PASSCODE_HASH) {
+        document.getElementById('passcode-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+    }
+}
         
         document.getElementById('unlock-btn').addEventListener('click', checkPasscode);
         document.getElementById('passcode-input').addEventListener('keypress', (e) => {
