@@ -1,75 +1,71 @@
 (async function() {
     console.clear();
-    console.log("[RF Tool] Starting injection...");
+    console.log("[RF Tool] Clean version loading...");
 
-    // Try to find Supabase client (common names)
-    let supabase = window.sb || window.supabase || 
-        (window.__NUXT__?.state?.supabase) ||  // if Nuxt
-        (function() { try { return document.querySelector('script').__supabase__ } catch(e){} })();
-
-    if (!supabase) {
-        console.error("[RF Tool] Supabase client not found in globals. Site might use private import.");
-        alert("Platform client not detected. Refresh page fully, then try again.");
-        return;
+    // Try to grab username from common places
+    let username = "unknown";
+    const possibleSelectors = [
+        'a[href^="/@"]', 'span.font-bold', '[data-username]',
+        '.profile-username', 'div.text-xl.font-semibold', 'h2'
+    ];
+    for (const sel of possibleSelectors) {
+        const el = document.querySelector(sel);
+        if (el && el.textContent.trim()) {
+            username = el.textContent.trim().replace(/^@/, '');
+            break;
+        }
     }
 
-    console.log("[RF Tool] Supabase found!");
-
-    // Try to get current user/profile
-    let profile = null;
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        profile = user;
-        console.log("[RF Tool] Auth user:", user?.id);
-    } catch (e) {
-        console.warn("[RF Tool] auth.getUser failed:", e);
-    }
-
-    // Fallback to DOM for username if needed
-    const usernameElem = document.querySelector('a[href^="/@"]') || 
-                         document.querySelector('[data-testid="profile-username"]') ||
-                         document.querySelector('span.font-bold');
-    const username = usernameElem ? usernameElem.textContent.trim().replace('@','') : 'unknown';
-
-    // Show loading toast
+    // Loading toast (less obnoxious)
     const toast = document.createElement('div');
-    toast.textContent = `Tool Loading for @${username}...`;
-    toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:12px 28px;border-radius:999px;z-index:9999999;font-weight:bold;box-shadow:0 4px 16px #00000050;';
+    toast.textContent = `Tool starting for @${username}...`;
+    toast.style.cssText = `
+        position:fixed; top:20px; left:50%; transform:translateX(-50%);
+        background:rgba(168,85,247,0.9); color:white; padding:10px 24px;
+        border-radius:12px; z-index:9999999; font-family:monospace;
+        box-shadow:0 4px 16px rgba(0,0,0,0.6); font-size:14px;
+    `;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => toast.remove(), 2200);
 
-    // Build panel
+    // Clean modern panel (no gradient vomit, better spacing, readable)
     const panel = document.createElement('div');
-    panel.style.cssText = 'position:fixed;bottom:20px;right:20px;width:440px;max-height:85vh;background:#0f172a;border:2px solid #a855f7;border-radius:16px;z-index:999999;box-shadow:0 20px 60px #000c;overflow-y:auto;color:#e2e8f0;font-family:monospace;';
+    panel.id = 'rf-tool-clean';
+    panel.style.cssText = `
+        position:fixed; bottom:24px; right:24px; width:380px; max-height:80vh;
+        background:#111827; border:1px solid #4b5563; border-radius:12px;
+        z-index:999999; box-shadow:0 10px 30px rgba(0,0,0,0.7);
+        color:#e5e7eb; font-family:system-ui,sans-serif; overflow:hidden;
+    `;
+
     panel.innerHTML = `
-        <div style="background:linear-gradient(135deg,#a855f7,#ec489a);padding:14px;text-align:center;font-weight:bold;color:white;font-size:17px;">
-            RealFeed Tool • Connected as @${username}
-            <button onclick="this.closest('div').parentElement.remove()" style="float:right;background:none;border:none;color:white;font-size:22px;cursor:pointer;">×</button>
+        <div style="background:#1f2937; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #374151;">
+            <div style="font-weight:600; font-size:15px;">RealFeed Tools</div>
+            <button onclick="document.getElementById('rf-tool-clean').remove()" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:18px;padding:0 8px;">×</button>
         </div>
         <div style="padding:16px;">
-            <p style="color:#94a3b8;margin-bottom:16px;">Basic controls ready. Customize actions below.</p>
-            
-            <button style="background:#10b981;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" 
-              onclick="alert('Mass like would run here - add sb.from(\"likes\").insert(...) logic later')">
-                ❤️ Like Visible Posts
+            <div style="margin-bottom:16px; font-size:13px; color:#9ca3af;">
+                Logged in as <strong>@${username}</strong>
+            </div>
+
+            <button style="background:#10b981; color:white; border:none; padding:10px 16px; border-radius:6px; width:100%; margin-bottom:10px; cursor:pointer; font-weight:500; font-size:14px;">
+                ❤️ Like All Visible Posts
             </button>
-            
-            <button style="background:#3b82f6;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" 
-              onclick="alert('Follow action placeholder - use sb.from(\"follows\")')">
-                👥 Follow Visible Users
+
+            <button style="background:#3b82f6; color:white; border:none; padding:10px 16px; border-radius:6px; width:100%; margin-bottom:10px; cursor:pointer; font-weight:500; font-size:14px;">
+                👥 Follow Everyone in View
             </button>
-            
-            <button style="background:#ef4444;color:white;border:none;padding:12px;border-radius:8px;width:100%;margin:8px 0;cursor:pointer;font-weight:bold;" 
-              onclick="if(confirm('Really clear DMs? This is destructive!')) alert('DM clear placeholder - sb.from(\"messages\").delete()...')">
-                🗑️ Clear My DMs (Danger!)
+
+            <button style="background:#ef4444; color:white; border:none; padding:10px 16px; border-radius:6px; width:100%; margin-bottom:10px; cursor:pointer; font-weight:500; font-size:14px;">
+                🗑️ Clear My DMs (Confirm First)
             </button>
-            
-            <div style="margin-top:24px;font-size:11px;color:#64748b;text-align:center;">
-                Panel injected successfully. Reply with diagnostic output for full features.
+
+            <div style="margin-top:20px; font-size:11px; color:#6b7280; text-align:center;">
+                Panel injected. Reply with what you actually want it to do.
             </div>
         </div>
     `;
-    document.body.appendChild(panel);
 
-    console.log("[RF Tool] Panel injected — check bottom-right corner");
+    document.body.appendChild(panel);
+    console.log("[RF Tool] Clean panel should be visible bottom-right now");
 })();
