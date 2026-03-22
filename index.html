@@ -3,221 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔐 Access Panel</title>
+<title>Tool Launcher</title>
 <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:linear-gradient(135deg,#0f172a,#1e1b4b);font-family:Segoe UI,Courier New,monospace;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;color:#e2e8f0}
-    .passcode-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0f172a,#1e1b4b);z-index:1000000;display:flex;justify-content:center;align-items:center;backdrop-filter:blur(10px)}
-    .passcode-box{background:rgba(10,10,18,.95);border-radius:32px;border:2px solid #a855f7;padding:40px;width:360px;text-align:center;box-shadow:0 25px 50px -12px rgba(168,85,247,.5)}
-    .passcode-box h2{color:#a855f7;margin-bottom:24px;font-size:24px}
-    .passcode-input{width:100%;background:#0f0f1a;border:1px solid #a855f7;border-radius:40px;padding:14px 20px;color:#fff;font-size:22px;text-align:center;letter-spacing:8px;margin-bottom:20px;outline:none}
-    .passcode-input:focus{border-color:#ec489a;box-shadow:0 0 12px rgba(168,85,247,.6)}
-    .passcode-btn{background:linear-gradient(135deg,#a855f7,#ec489a);border:none;border-radius:40px;padding:14px;color:#fff;font-weight:700;cursor:pointer;width:100%;font-size:17px;transition:all .22s}
-    .passcode-btn:hover{transform:scale(.98);box-shadow:0 6px 24px rgba(168,85,247,.5)}
-    .passcode-error{color:#ef4444;font-size:13px;margin-top:14px;display:none}
-    .main-app{display:none;max-width:820px;width:100%;background:rgba(10,10,18,.95);border-radius:32px;border:2px solid #a855f7;box-shadow:0 25px 50px -12px rgba(168,85,247,.4);overflow:hidden}
-    .header{background:linear-gradient(135deg,#a855f7,#ec489a);padding:28px;text-align:center}
-    .header h1{color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;gap:14px}
-    .status-bar{display:flex;justify-content:space-between;padding:14px 24px;background:#0f0f1a;border-bottom:1px solid #a855f7;font-size:13px;color:#94a3b8}
-    .status-dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px}
-    .status-dot.red{background:#ef4444;animation:pulse 1.4s infinite}
-    .status-dot.green{background:#10b981}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-    .content{padding:28px}
-    .btn{background:linear-gradient(135deg,#a855f7,#ec489a);border:none;border-radius:40px;padding:16px 32px;color:#fff;font-weight:700;cursor:pointer;font-size:17px;width:100%;transition:all .22s;margin-bottom:14px}
-    .btn:hover{transform:scale(.98);box-shadow:0 10px 24px rgba(168,85,247,.45)}
-    .btn-secondary{background:linear-gradient(135deg,#3b82f6,#8b5cf6)}
-    .log-area{background:#050508;border-radius:16px;padding:18px;max-height:220px;overflow-y:auto;font-family:monospace;font-size:12px;margin-top:24px;border:1px solid #a855f7}
-    .log-entry{padding:5px 0;border-bottom:1px solid #1a1a2a;color:#22c55e}
-    .footer{padding:18px;text-align:center;background:#0f0f1a;border-top:1px solid #a855f7;font-size:12px;color:#64748b}
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        background: linear-gradient(135deg, #0f172a, #1e1b4b);
+        font-family: 'Segoe UI', Courier New, monospace;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        color: #e2e8f0;
+    }
+    .container {
+        background: rgba(10,10,18,0.92);
+        border-radius: 24px;
+        border: 2px solid #a855f7;
+        padding: 32px;
+        width: 100%;
+        max-width: 480px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+    h1 { color: #a855f7; margin-bottom: 16px; font-size: 28px; }
+    .btn {
+        background: linear-gradient(135deg, #a855f7, #ec489a);
+        border: none;
+        border-radius: 40px;
+        padding: 14px 28px;
+        color: white;
+        font-weight: bold;
+        font-size: 17px;
+        cursor: pointer;
+        width: 100%;
+        margin: 12px 0;
+        transition: all 0.2s;
+    }
+    .btn:hover { transform: scale(0.97); box-shadow: 0 8px 20px rgba(168,85,247,0.4); }
+    .btn-secondary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
+    #log {
+        background: #050508;
+        border: 1px solid #a855f7;
+        border-radius: 12px;
+        padding: 16px;
+        max-height: 180px;
+        overflow-y: auto;
+        font-size: 13px;
+        margin-top: 20px;
+        text-align: left;
+    }
+    .log-line { margin: 4px 0; color: #4ade80; }
+    .error { color: #f87171; }
 </style>
 </head>
 <body>
 
-<div class="passcode-screen" id="p-screen">
-    <div class="passcode-box">
-        <h2>🔐 ENTER ACCESS</h2>
-        <input type="password" class="passcode-input" id="p-in" maxlength="6" placeholder="••••••" autofocus>
-        <button class="passcode-btn" id="u-btn">UNLOCK</button>
-        <div class="passcode-error" id="p-err">❌ Wrong input</div>
+<div class="container">
+    <h1>🔧 Tool Launcher</h1>
+    <button class="btn" id="launch">🚀 LAUNCH TOOL</button>
+    <button class="btn btn-secondary" id="open">🌐 OPEN realfeed.lol</button>
+    
+    <div id="log">
+        <div class="log-line">[00:00] Launcher ready</div>
+        <div class="log-line">[00:00] Click LAUNCH TOOL after you're logged in</div>
     </div>
-</div>
-
-<div class="main-app" id="m-app">
-    <div class="header">
-        <h1>🔧 PANEL <span style="font-size:15px;background:rgba(255,255,255,.25);padding:5px 12px;border-radius:24px">v6.2</span></h1>
-        <p>Tools • Export • Automation</p>
-    </div>
-    <div class="status-bar">
-        <span><span class="status-dot red" id="s-dot"></span> <span id="s-txt">Offline</span></span>
-        <span>👤 <span id="u-d">—</span></span>
-    </div>
-    <div class="content">
-        <button class="btn" id="inj">🚀 LAUNCH TOOL</button>
-        <button class="btn btn-secondary" id="opn">🌐 OPEN PLATFORM</button>
-        <div class="log-area" id="logs">
-            <div class="log-entry">[SYS] Panel initialized</div>
-            <div class="log-entry">[SYS] Ready for launch sequence</div>
-        </div>
-    </div>
-    <div class="footer">Panel v6.2 • Responsible use only</div>
 </div>
 
 <script>
-// ──────────────────────────────────────────────────────────────
-// OBFUSCATION LAYER ─────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────────
+function log(msg, type = 'info') {
+    const area = document.getElementById('log');
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    if (type === 'error') line.className += ' error';
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    area.appendChild(line);
+    area.scrollTop = area.scrollHeight;
+}
 
-const _0x = [
-    'realfeed','.lol','sb','currentProfile','currentUser','from','profiles','posts','likes','follows','messages','insert','delete','eq','id','username'
-];
+async function launch() {
+    log('Preparing launch...');
 
-function _(i){return _0x[i]}
+    let target = null;
+    try {
+        target = window.open('', 'realfeed');
+    } catch(e) {}
 
-const saltA = 'x9kP2mQz'; // random-looking
-const saltB = '7vL4nR8t';
-
-const targetHash = '2c8e3f8a0e9b7d5f1a2c4e6b8d0f2a4c6e8b0d1f3a5c7e9b0d2f4a6c8e'; // ← your real double-salted SHA-256 here
-
-// Fake / misleading checks (anti-casual reverse)
-function fakeCheck1(v){return v.length===4&&v[0]==='0'&&v[3]==='9'}
-function fakeCheck2(v){return parseInt(v,10)%13===7}
-function fakeCheck3(v){return v.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%42===23}
-
-// Real check (double salted SHA-256)
-async function verify(){
-    const v = document.getElementById('p-in').value.trim();
-    if(!v||v.length<4||v.length>6) return showErr();
-
-    // fake traps
-    if(fakeCheck1(v)||fakeCheck2(v)||fakeCheck3(v)){
-        showErr(); return;
+    if (!target || target.closed) {
+        log('Opening realfeed.lol in new tab...');
+        target = window.open('https://realfeed.lol', 'realfeed');
+        await new Promise(r => setTimeout(r, 3500));
     }
 
-    const enc = new TextEncoder();
-    let step1 = await crypto.subtle.digest('SHA-256', enc.encode(v + saltA));
-    let step2 = await crypto.subtle.digest('SHA-256', new Uint8Array([...new Uint8Array(step1), ...enc.encode(saltB)]));
-
-    const h = Array.from(new Uint8Array(step2)).map(b=>b.toString(16).padStart(2,'0')).join('');
-
-    if(h === targetHash){
-        document.getElementById('p-screen').style.display='none';
-        document.getElementById('m-app').style.display='block';
-        log('Sequence accepted','ok');
-    } else {
-        showErr();
-    }
-}
-
-function showErr(){
-    const e = document.getElementById('p-err');
-    e.style.display='block';
-    setTimeout(()=>e.style.display='none', 1800);
-}
-
-document.getElementById('u-btn').onclick=verify;
-document.getElementById('p-in').onkeypress=e=>{if(e.key==='Enter')verify()};
-
-// ── logging ─────────────────────────────────────────────────────
-function log(m,t='info'){
-    const a=document.getElementById('logs');
-    const l=document.createElement('div');
-    l.className='log-entry';
-    if(t==='err') l.style.color='#f87171';
-    if(t==='ok')  l.style.color='#4ade80';
-    l.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;
-    a.appendChild(l);
-    l.scrollIntoView();
-    if(a.children.length>60) a.removeChild(a.firstChild);
-}
-
-// ── status ──────────────────────────────────────────────────────
-function stat(c,u=null){
-    const d=document.getElementById('s-dot');
-    const t=document.getElementById('s-txt');
-    const ud=document.getElementById('u-d');
-    d.className='status-dot '+(c?'green':'red');
-    t.textContent=c?'Active':'Offline';
-    ud.textContent=u?`@${u}`:'—';
-}
-
-// ── runtime string builder for extra obfuscation ────────────────
-function buildKeyParts(){
-    const p1 = [15,13,14,16,12]; // username
-    const p2 = [0,1];             // realfeed.lol
-    let s='';
-    p2.forEach(i=>s+=_(i));
-    return {u:_(p1[0]), d:s};
-}
-
-// ── injection payload (pieces built at runtime) ────────────────
-const payloadParts = [
-    '(async function(){',
-    'if(typeof ',
-    '===',
-    "'undefined' || !window.",
-    "){alert('Platform not ready');return}",
-    "const t=document.createElement('div');",
-    "t.textContent='Control loading...';",
-    "t.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:10px 24px;border-radius:999px;z-index:9999999;';",
-    "document.body.appendChild(t);setTimeout(()=>t.remove(),2400);",
-    0821
-    // for demo we just make a minimal floating box
-    "const p=document.createElement('div');",
-    "p.style.cssText='position:fixed;bottom:24px;right:24px;width:360px;background:#0f172a;border:2px solid #a855f7;border-radius:16px;z-index:999999;padding:16px;color:#e2e8f0';",
-    "p.innerHTML='<div style=\"color:#a855f7;font-weight:bold\">Tool Interface Active</div><p>Customize features here</p>';",
-    "document.body.appendChild(p);",
-    "console.log('[CTL] Loaded');",
-    "})();"
-];
-
-async function inject(){
-    log('Preparing launch...','info');
-
-    let w = null;
-    try{w = window.open('', 't');}catch{}
-    if(!w||w.closed){
-        log('Opening platform...','info');
-        w = window.open('https://'+buildKeyParts().d, 't');
-        await new Promise(r=>setTimeout(r,3800));
-    }
-    if(!w||w.closed){
-        log('Could not reach platform','err');
+    if (!target || target.closed) {
+        log('Could not open or find realfeed tab', 'error');
         return;
     }
 
-    try{
-        const s = w.document.createElement('script');
-        s.textContent = payloadParts.join('');
-        w.document.body.appendChild(s);
-        log('Launch completed – check platform','ok');
-        stat(true);
-    }catch(e){
-        log('Direct launch blocked','err');
-        log('Open devtools (F12) on platform → paste code below','warn');
+    log('Target window ready. Injecting script...');
 
-        const box = document.createElement('textarea');
-        box.value = payloadParts.join('');
-        box.style.cssText='position:fixed;inset:0;margin:auto;width:720px;height:480px;z-index:10000000;background:#111;color:#8b5cf6;border:3px solid #a855f7;border-radius:16px;padding:20px;font-family:monospace;font-size:13px;';
+    const code = `
+    (function() {
+        if (typeof sb === 'undefined' || !window.currentProfile) {
+            alert('Please refresh realfeed.lol and log in first.');
+            return;
+        }
+
+        const box = document.createElement('div');
+        box.style.cssText = 'position:fixed;bottom:20px;right:20px;width:340px;background:#0f172a;border:2px solid #a855f7;border-radius:16px;padding:16px;color:#e2e8f0;z-index:999999;box-shadow:0 10px 30px #00000080;';
+        box.innerHTML = '<div style="color:#a855f7;font-weight:bold;font-size:18px;">Tool Active</div><p>Control panel would go here</p>';
         document.body.appendChild(box);
-        box.select();
 
-        const cl = document.createElement('button');
-        cl.textContent='CLOSE';
-        cl.style.cssText='position:fixed;bottom:30%;left:50%;transform:translateX(-50%);background:#a855f7;color:white;border:none;border-radius:40px;padding:12px 32px;z-index:10000001;cursor:pointer;';
-        cl.onclick=()=>box.remove();
-        document.body.appendChild(cl);
+        console.log('[TOOL] Injected successfully');
+    })();
+    `;
+
+    try {
+        const script = target.document.createElement('script');
+        script.textContent = code;
+        target.document.body.appendChild(script);
+        log('Injection completed ✓ Look bottom-right on realfeed page', 'success');
+    } catch (err) {
+        log('Could not inject directly (cross-origin block)', 'error');
+        log('Open F12 console on realfeed.lol and paste the code from below', 'error');
+        
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;z-index:9999999;background:#111;color:#0f0;font-family:monospace;padding:12px;border:2px solid #a855f7;';
+        document.body.appendChild(ta);
+        ta.select();
+        
+        setTimeout(() => {
+            if (confirm('Copy done? Close box?')) ta.remove();
+        }, 8000);
     }
 }
 
-document.getElementById('inj').onclick=inject;
-document.getElementById('opn').onclick=()=>{
-    window.open('https://'+buildKeyParts().d, 't');
-    log('Platform opened','info');
-};
+document.getElementById('launch').onclick = launch;
 
-stat(false);
-log('Awaiting access key','info');
+document.getElementById('open').onclick = () => {
+    window.open('https://realfeed.lol', 'realfeed');
+    log('realfeed.lol opened in new tab');
+};
 </script>
 </body>
 </html>
